@@ -1,32 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X, Filter } from 'lucide-react';
+import { Search, X, Filter, Layers, Code2, TrendingUp, Languages, RotateCcw } from 'lucide-react';
 import { useFilterStore, FilterGenre } from '../stores/filterStore';
 import { useDebounce } from '../hooks/useDebounce';
-import { Genre } from '../types/book.types';
 
-const GENRES: { key: FilterGenre; label: string }[] = [
-  { key: 'All', label: 'Tất cả thể loại' },
-  { key: 'CNTT', label: 'CNTT' },
-  { key: 'Kinh tế', label: 'Kinh tế' },
-  { key: 'Ngoại ngữ', label: 'Ngoại ngữ' },
+interface GenreOption {
+  key: FilterGenre;
+  label: string;
+  icon: React.ReactNode;
+}
+
+const GENRES: GenreOption[] = [
+  { key: 'All', label: 'Tất cả thể loại', icon: <Layers size={14} className="icon-mr" /> },
+  { key: 'CNTT', label: 'CNTT', icon: <Code2 size={14} className="icon-mr" /> },
+  { key: 'Kinh tế', label: 'Kinh tế', icon: <TrendingUp size={14} className="icon-mr" /> },
+  { key: 'Ngoại ngữ', label: 'Ngoại ngữ', icon: <Languages size={14} className="icon-mr" /> },
 ];
 
 export const SearchBar: React.FC = () => {
   const { searchKeyword, selectedGenre, setSearchKeyword, setSelectedGenre, resetFilters } =
     useFilterStore();
 
-  // Local state cho ô input để người dùng gõ mượt mà
   const [localInput, setLocalInput] = useState(searchKeyword);
-
-  // Buổi 2 & Yêu cầu kỹ thuật 5: áp dụng useDebounce 300ms
   const debouncedKeyword = useDebounce<string>(localInput, 300);
 
-  // Khi giá trị debounced thay đổi sau 300ms, đẩy vào Zustand store
   useEffect(() => {
     setSearchKeyword(debouncedKeyword);
   }, [debouncedKeyword, setSearchKeyword]);
 
-  // Đồng bộ lại local input nếu store bị reset từ bên ngoài
   useEffect(() => {
     setLocalInput(searchKeyword);
   }, [searchKeyword]);
@@ -39,11 +39,13 @@ export const SearchBar: React.FC = () => {
   return (
     <div className="search-filter-card">
       <div className="search-input-wrapper">
-        <Search className="search-icon" size={20} />
+        <div className="search-icon-badge">
+          <Search size={18} />
+        </div>
         <input
           type="text"
           className="search-input"
-          placeholder="Tìm sách theo tên sách hoặc tên tác giả..."
+          placeholder="Tìm sách theo tên giáo trình hoặc tên tác giả (tự động debounce 300ms)..."
           value={localInput}
           onChange={(e) => setLocalInput(e.target.value)}
           data-testid="search-input"
@@ -54,6 +56,7 @@ export const SearchBar: React.FC = () => {
             className="clear-search-btn"
             onClick={handleClear}
             aria-label="Xóa từ khóa tìm kiếm"
+            title="Xóa tìm kiếm"
           >
             <X size={16} />
           </button>
@@ -62,8 +65,8 @@ export const SearchBar: React.FC = () => {
 
       <div className="filter-genre-container">
         <div className="filter-label">
-          <Filter size={16} className="icon-mr" />
-          <span>Thể loại:</span>
+          <Filter size={15} className="icon-mr" />
+          <span>Lọc thể loại:</span>
         </div>
         <div className="genre-buttons-group">
           {GENRES.map((g) => (
@@ -74,6 +77,7 @@ export const SearchBar: React.FC = () => {
               onClick={() => setSelectedGenre(g.key)}
               data-testid={`filter-genre-${g.key}`}
             >
+              {g.icon}
               {g.label}
             </button>
           ))}
@@ -84,7 +88,9 @@ export const SearchBar: React.FC = () => {
             type="button"
             className="reset-filters-btn"
             onClick={resetFilters}
+            title="Xóa toàn bộ bộ lọc"
           >
+            <RotateCcw size={13} className="icon-mr" />
             Đặt lại bộ lọc
           </button>
         )}
